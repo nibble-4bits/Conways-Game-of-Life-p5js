@@ -12,38 +12,18 @@ function setup() {
     previousGen = create2DArray(rowLength);
     for (let i = 0; i < rowLength; i++) {
         for (let j = 0; j < rowLength; j++) {
-            previousGen[i][j] = false;//random(1) > 0.95 ? true : false;
+            previousGen[i][j] = random(1) > 0.85 ? true : false;
             if (previousGen[i][j]) fill(0);
             else fill(255);
             stroke(200);
             rect(i * scale, j * scale, scale, scale);
         }
     }
-    //frameRate(10);
 }
 
 function draw() {
     if (started) {
-        nextGen = create2DArray(rowLength);
-
-        for (let i = 0; i < nextGen.length; i++) {
-            for (let j = 0; j < nextGen[i].length; j++) {
-                var neighbors = checkNeighbors(previousGen, i, j);
-                if (previousGen[i][j]) {
-                    if (neighbors < 2 || neighbors > 3) {
-                        nextGen[i][j] = false;
-                    }
-                    else {
-                        nextGen[i][j] = true;
-                    }
-                }
-                else {
-                    if (neighbors == 3) {
-                        nextGen[i][j] = true;
-                    }
-                }
-            }
-        }
+        nextGen = calculateNextGeneration();
 
         for (let i = 0; i < nextGen.length; i++) {
             for (let j = 0; j < nextGen[i].length; j++) {
@@ -57,6 +37,28 @@ function draw() {
 
         previousGen = nextGen;
     }
+}
+
+function calculateNextGeneration() {
+    nextGen = create2DArray(rowLength);
+
+    for (let i = 0; i < nextGen.length; i++) {
+        for (let j = 0; j < nextGen[i].length; j++) {
+            var neighbors = checkNeighbors(previousGen, i, j);
+            
+            // If cell is dead and has 3 neighbors, cell becomes alive
+            if (!previousGen[i][j] && neighbors == 3)
+                nextGen[i][j] = true;
+            // If cell is alive and has less than 2 or more than 3 neighbors, cell becomes dead
+            else if (previousGen[i][j] && (neighbors < 2 || neighbors > 3))
+                nextGen[i][j] = false;
+            // If cell is alive and has exactly 2 or 3 neighbors, cell stays alive
+            else
+                nextGen[i][j] = previousGen[i][j];
+        }
+    }
+
+    return nextGen;
 }
 
 function checkNeighbors(array, x, y) {
@@ -82,7 +84,6 @@ function checkNeighbors(array, x, y) {
 function addCell() {
     let xCoord = floor(mouseX / scale);
     let yCoord = floor(mouseY / scale);
-    //console.log(`X = ${xCoord}, Y = ${yCoord}`);
     previousGen[xCoord][yCoord] = true;
 
     fill(0);
