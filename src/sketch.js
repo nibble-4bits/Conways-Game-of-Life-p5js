@@ -2,19 +2,20 @@ let scale = 10;
 let started = false;
 let previousGen;
 let nextGen;
-let rowLength;
+let rows;
 
 function setup() {
+    document.addEventListener("contextmenu", e => e.preventDefault());
     createCanvas(600, 600).mousePressed(addCell);
-    createButton("Start sketch!").mousePressed(start);
+    createButton("Start simulation!").mousePressed(startSimulation);
+    createButton("Stop simulation").mousePressed(stopSimulation);
+    createButton("Randomize").mousePressed(randomizeCanvas);
 
-    rowLength = floor(width / scale);
-    previousGen = create2DArray(rowLength);
-    for (let i = 0; i < rowLength; i++) {
-        for (let j = 0; j < rowLength; j++) {
-            previousGen[i][j] = random(1) > 0.85 ? true : false;
-            if (previousGen[i][j]) fill(0);
-            else fill(255);
+    rows = floor(width / scale);
+    previousGen = create2DArray(rows);
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < rows; j++) {
+            previousGen[i][j] = false;//random(1) > 0.9 ? true : false;
             stroke(200);
             rect(i * scale, j * scale, scale, scale);
         }
@@ -40,12 +41,12 @@ function draw() {
 }
 
 function calculateNextGeneration() {
-    nextGen = create2DArray(rowLength);
+    nextGen = create2DArray(rows);
 
     for (let i = 0; i < nextGen.length; i++) {
         for (let j = 0; j < nextGen[i].length; j++) {
             var neighbors = checkNeighbors(previousGen, i, j);
-            
+
             // If cell is dead and has 3 neighbors, cell becomes alive
             if (!previousGen[i][j] && neighbors == 3)
                 nextGen[i][j] = true;
@@ -70,7 +71,7 @@ function checkNeighbors(array, x, y) {
         for (let j = -1; j < 2; j++) {
             row = x + i;
             col = y + j;
-            if (!(i == 0 && j == 0) && (row >= 0 && row < rowLength) && (col >= 0 && col < rowLength)) {
+            if (!(i == 0 && j == 0) && (row >= 0 && row < rows) && (col >= 0 && col < rows)) {
                 if (array[x + i][y + j]) {
                     count++;
                 }
@@ -84,10 +85,19 @@ function checkNeighbors(array, x, y) {
 function addCell() {
     let xCoord = floor(mouseX / scale);
     let yCoord = floor(mouseY / scale);
-    previousGen[xCoord][yCoord] = true;
 
-    fill(0);
-    rect(xCoord * scale, yCoord * scale, scale, scale);
+    if (mouseButton == LEFT) {
+        previousGen[xCoord][yCoord] = true;
+
+        fill(0);
+        rect(xCoord * scale, yCoord * scale, scale, scale);
+    }
+    else if (mouseButton == RIGHT) {
+        previousGen[xCoord][yCoord] = false;
+
+        fill(255);
+        rect(xCoord * scale, yCoord * scale, scale, scale);
+    }
 }
 
 function create2DArray(length) {
@@ -99,6 +109,22 @@ function create2DArray(length) {
     return array;
 }
 
-function start() {
+function randomizeCanvas() {
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < rows; j++) {
+            previousGen[i][j] = random(1) > 0.9 ? true : false;
+            if (previousGen[i][j]) fill(0);
+            else fill(255);
+            stroke(200);
+            rect(i * scale, j * scale, scale, scale);
+        }
+    }
+}
+
+function startSimulation() {
     started = true;
+}
+
+function stopSimulation() {
+    started = false;
 }
